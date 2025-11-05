@@ -1,0 +1,61 @@
+/* --- Global Styles --- */
+body {
+    font-family: sans-serif;
+    margin: 2em;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+.container {
+    width: 100%;
+    max-width: 8.5in;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+a {
+    text-decoration: none;
+    color: #007bff;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+h1 {
+    color: #333;
+}
+
+/* --- Print-Friendly Styles --- */
+@media print {
+    body {
+        background-color: #fff;
+        margin: 1in;
+    }
+
+    .container {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    /* Hide non-essential elements when printing */
+    form#queryForm {
+        display: none;
+    }
+
+    /* Ensure results table fills the page width */
+    #results, #results table {
+        width: 100%;
+        max-width: 100%;
+        overflow: visible;
+    }
+
+    #results table {
+        table-layout: auto; /* Allow table to adjust column widths */
+    }
+}

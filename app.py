@@ -1,7 +1,8 @@
-from flask import Flask, render_template_string, request, jsonify
+from flask import Flask, render_template, Blueprint
 import pyodbc
 import os
-
+import importlib
+from pathlib import Path
 # --- Configuration ---
 # Fetch configuration from environment variables
 DB_SERVER = os.environ.get('DB_SERVER')
@@ -25,172 +26,44 @@ conn_str = f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DB_NAME};UID={DB_US
 if DB_ENCRYPT:
     conn_str += f';Encrypt={DB_ENCRYPT}'
 
-# --- Flask App Initialization ---
-app = Flask(__name__)
+def create_app():
+    """App factory to create and configure the Flask application."""
+    app = Flask(__name__)
+    app.config['CONNECTION_STRING'] = conn_str
 
-# --- HTML Template ---
-# For simplicity, the HTML is embedded in the Python script.
-# In a larger app, you would save this in a separate 'templates/index.html' file.
-HTML_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL Query Runner</title>
-    <style>
-        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f9; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 8px; margin: 10px 0; box-sizing: border-box; }
-        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        #results { margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        #error { color: red; }
-        #loading { color: #0056b3; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Query Inventory by Group</h1>
-        <p>Enter a group number to search for.</p>
-        <form id="queryForm">
-            <label for="groupNumber">Group Number:</label>
-            <input type="text" id="groupNumber" name="groupNumber" placeholder="e.g., 38">
-            <button type="submit">Run Query</button>
-        </form>
-        <div id="error"></div>
-        <div id="loading"></div>
-        <div id="results"></div>
-    </div>
+    def discover_blueprints(root_path, root_module):
+        """Recursively discover and register blueprints."""
+        tree = {}
+        for path in root_path.iterdir():
+            if not path.is_dir():
+                continue
 
-    <script>
-        document.getElementById('queryForm').addEventListener('submit', async function(event) {
-            event.preventDefault(); // Prevent default form submission
-            
-            const groupNumber = document.getElementById('groupNumber').value;
-            const resultsDiv = document.getElementById('results');
-            const errorDiv = document.getElementById('error');
-            const loadingDiv = document.getElementById('loading');
+            # It's a query module if it has routes.py
+            if (path / 'routes.py').exists():
+                module_name = f"{root_module}.{path.name}.routes"
+                module = importlib.import_module(module_name)
+                for item in dir(module):
+                    bp = getattr(module, item)
+                    if isinstance(bp, Blueprint):
+                        app.register_blueprint(bp)
+                        # Store the blueprint itself for the template
+                        tree[path.name] = {"blueprint": bp, "children": {}}
+                        break
+            # Otherwise, it's a group folder, so recurse
+            else:
+                subtree = discover_blueprints(path, f"{root_module}.{path.name}")
+                if subtree:
+                    tree[path.name] = {"blueprint": None, "children": subtree}
+        return tree
 
-            resultsDiv.innerHTML = '';
-            errorDiv.innerHTML = '';
-            loadingDiv.innerHTML = 'Loading...';
+    queries_root_path = Path(__file__).parent / 'queries'
+    queries_tree = discover_blueprints(queries_root_path, 'queries')
 
-            try {
-                const response = await fetch('/query', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ group: groupNumber })
-                });
+    @app.route('/')
+    def index():
+        """Serves the main directory page, passing in discovered queries."""
+        return render_template('index.html', queries_tree=queries_tree)
 
-                if (!response.ok) {
-                    const err = await response.json();
-                    throw new Error(err.error || 'An unknown error occurred.');
-                }
+    return app
 
-                const data = await response.json();
-                
-                if (data.length === 0) {
-                    resultsDiv.innerHTML = '<p>No results found.</p>';
-                    return;
-                }
-
-                // Create HTML table from the JSON data
-                let table = '<table><thead><tr>';
-                const headers = Object.keys(data[0]);
-                headers.forEach(header => table += `<th>${header}</th>`);
-                table += '</tr></thead><tbody>';
-
-                data.forEach(row => {
-                    table += '<tr>';
-                    headers.forEach(header => {
-                        // Handle null values gracefully
-                        const cellData = row[header] === null ? '' : row[header];
-                        table += `<td>${cellData}</td>`
-                    });
-                    table += '</tr>';
-                });
-
-                table += '</tbody></table>';
-                resultsDiv.innerHTML = table;
-
-            } catch (error) {
-                errorDiv.innerHTML = `Error: ${error.message}`;
-            } finally {
-                loadingDiv.innerHTML = '';
-            }
-        });
-    </script>
-</body>
-</html>
-"""
-
-# --- API Routes ---
-@app.route('/')
-def index():
-    """Serves the main HTML page."""
-    return render_template_string(HTML_TEMPLATE)
-
-@app.route('/query', methods=['POST'])
-def run_query():
-    """Receives a request, queries the database, and returns data as JSON."""
-    try:
-        # Get the parameter from the incoming JSON request
-        data = request.get_json()
-        group_param = data.get('group')
-
-        if not group_param:
-            return jsonify({"error": "Group parameter is missing"}), 400
-
-        # --- YOUR PRESET SQL QUERY GOES HERE ---
-        # Use '?' as a placeholder for parameters to prevent SQL injection.
-        sql_query = """
-            SELECT
-                incom.[Group],
-                instr.Item,
-                incom.Description,
-                instr.OnHand,
-                instr.OnOrder,
-                instr.Committed
-            FROM 
-                InventoryCommon incom (nolock) 
-            INNER JOIN 
-                InventoryStore instr (nolock) on incom.Item = instr.Item
-            WHERE incom.[Group] = ?
-        """
-
-        conn = pyodbc.connect(conn_str)
-        cursor = conn.cursor()
-        
-        # Execute the query with the parameter
-        cursor.execute(sql_query, group_param)
-        
-        # Fetch data and convert it to a list of dictionaries
-        columns = [column[0] for column in cursor.description]
-        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        
-        cursor.close()
-        conn.close()
-        
-        return jsonify(results)
-
-    except pyodbc.Error as ex:
-        sqlstate = ex.args[0]
-        print(f"Database Error: {sqlstate}")
-        # Provide a more specific error message for connection issues
-        if '08001' in sqlstate:
-             return jsonify({"error": "Database connection failed. Check server address and credentials."}), 500
-        return jsonify({"error": "Database query failed."}), 500
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        return jsonify({"error": "An internal server error occurred."}), 500
-
-# --- Main Execution ---
-if __name__ == '__main__':
-    # To make it accessible on your network, use host='0.0.0.0'
-    # The 'debug=True' is great for development but should be False in production.
-    # Docker Compose will manage the debug state.
-    app.run(host='0.0.0.0', port=5000)
+app = create_app()

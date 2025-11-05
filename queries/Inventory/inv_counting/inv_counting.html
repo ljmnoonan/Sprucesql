@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory by Group</title>
+    <!-- Global stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <!-- Local stylesheet for this specific query page -->
+    <link rel="stylesheet" href="{{ url_for('inv_counting.static', filename='css/inv_counting.css') }}">
+    <style>
+        /* Styles specific to the results table */
+        #results { margin-top: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        #error { color: red; }
+        #loading { color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="/">&larr; Back to Directory</a></p>
+        <h1>Query Inventory by Group</h1>
+        <p>Enter a group number to search for.</p>
+        <form id="queryForm">
+            <label for="groupNumber">Group Number:</label>
+            <input type="text" id="groupNumber" name="groupNumber" placeholder="e.g., 38">
+            <button type="submit">Run Query</button>
+        </form>
+        <div id="error"></div>
+        <div id="loading"></div>
+        <div id="results"></div>
+    </div>
+    
+    <!-- Link to the external JavaScript file for this page -->
+    <script src="{{ url_for('inv_counting.static', filename='js/inv_counting.js') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpruceSQL Query Directory</title>
+    <!-- Link to the global stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        /* Styles specific to the index page directory */
+        ul { list-style-type: none; padding-left: 20px; }
+        summary { cursor: pointer; font-weight: bold; }
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details > summary::before { content: '▸ '; }
+        details[open] > summary::before { content: '▾ '; }
+        .query-link { margin: 5px 0; font-size: 1.1em; }
+    </style>
+</head>
+<body>
+    {# This macro recursively renders the directory tree #}
+    {% macro render_tree(tree) %}
+        <ul>
+        {% for name, item in tree|dictsort %}
+            <li>
+                {% if item.blueprint %}
+                    {# This is a query link #}
+                    <div class="query-link">
+                        <a href="{{ item.blueprint.url_prefix }}">{{ item.blueprint.display_name }}</a>
+                    </div>
+                {% else %}
+                    {# This is a folder #}
+                    <details>
+                        <summary>{{ name }}</summary>
+                        {{ render_tree(item.children) }}
+                    </details>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% endmacro %}
+
+    <div class="container">
+        <h1>Query Directory</h1>
+        <p>Select a query to run:</p>
+        {{ render_tree(queries_tree) }}
+    </div>
+</body>
+</html>

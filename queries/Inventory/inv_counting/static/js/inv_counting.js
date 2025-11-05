@@ -9,6 +9,7 @@ async function handleQuerySubmit(event) {
     event.preventDefault();
     
     const groupNumber = document.getElementById('groupNumber').value;
+    const reportNameDiv = document.getElementById('report-name-box');
     const resultsDiv = document.getElementById('results');
     const errorDiv = document.getElementById('error');
     const loadingDiv = document.getElementById('loading');
@@ -49,6 +50,7 @@ async function handleQuerySubmit(event) {
 
         table += '</tbody></table>';
         resultsDiv.innerHTML = table;
+        reportNameDiv.innerHTML = `<h2>Inventory Report for Group ${groupNumber}</h2>`;
     } catch (error) {
         errorDiv.innerHTML = `Error: ${error.message}`;
     } finally {

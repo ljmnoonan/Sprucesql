@@ -20,14 +20,17 @@
 </head>
 <body>
     <div class="container">
-        <p><a href="/">&larr; Back to Directory</a></p>
-        <h1>Query Inventory by Group</h1>
-        <p>Enter a group number to search for.</p>
-        <form id="queryForm">
-            <label for="groupNumber">Group Number:</label>
-            <input type="text" id="groupNumber" name="groupNumber" placeholder="e.g., 38">
-            <button type="submit">Run Query</button>
-        </form>
+        <div class="control-box">
+            <p><a href="/">&larr; Back to Directory</a></p>
+            <h1>Query Inventory by Group</h1>
+            <p>Enter a group number to search for.</p>
+            <form id="queryForm">
+                <label for="groupNumber">Group Number:</label>
+                <input type="text" id="groupNumber" name="groupNumber" placeholder="e.g., 38">
+                <button type="submit">Run Query</button>
+            </form>
+        </div>
+        <div id="report-name-box"class="report-name"></div>
         <div id="error"></div>
         <div id="loading"></div>
         <div id="results"></div>

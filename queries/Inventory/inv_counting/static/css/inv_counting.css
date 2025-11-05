@@ -19,3 +19,15 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+.report-name {
+    display: none;
+} 
+
+
+
+@media print {
+    .report-name {
+        display: inline;
+    }
+}

@@ -7,8 +7,8 @@ body {
 }
 
 .container {
-    width: 100%;
-    max-width: 8.5in;
+    width: 80vw;
+    max-width: 1500px;
     margin: auto;
     background: white;
     padding: 20px;
@@ -33,7 +33,8 @@ h1 {
 @media print {
     body {
         background-color: #fff;
-        margin: 1in;
+        margin: 0;
+        width: 100vw;
     }
 
     .container {
@@ -41,10 +42,12 @@ h1 {
         border: 1px solid #ccc;
         max-width: 100%;
         width: 100%;
+        padding: 0;
+        box-sizing: border-box;
     }
 
     /* Hide non-essential elements when printing */
-    form#queryForm {
+    form#queryForm, .control-box {
         display: none;
     }
 
@@ -52,7 +55,7 @@ h1 {
     #results, #results table {
         width: 100%;
         max-width: 100%;
-        overflow: visible;
+        overflow: none;
     }
 
     #results table {

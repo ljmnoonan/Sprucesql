@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sequence Helper</title>
+    <!-- Global stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <!-- Local stylesheet for this specific query page -->
+    <link rel="stylesheet" href="{{ url_for('sequence_helper.static', filename='css/sequence_helper.css') }}">
+    <style>
+        /* Styles specific to the results table */
+        #results { margin-top: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        #error { color: red; }
+        #loading { color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-box">
+            <p><a href="/">&larr; Back to Directory</a></p>
+            <h1>Sequence Helper</h1>
+            <p>Enter an item number and a lookup range to see the surrounding sequence numbers.</p>
+            <form id="queryForm">
+                <input type="text" id="item" name="item" placeholder="Enter Item Number" required>
+                <label for="range" style="margin-left: 10px;">Range (+/-):</label>
+                <input type="number" id="range" name="range" value="15" min="1" max="200" style="width: 80px; margin: 10px 0 10px 5px;">
+                <button type="submit">Get Sequences</button>
+            </form>
+        </div>
+        <div id="report-name-box"class="report-name"></div>
+        <div id="error"></div>
+        <div id="loading"></div>
+        <div id="results"></div>
+    </div>
+    
+    <script src="{{ url_for('sequence_helper.static', filename='js/sequence_helper.js') }}" defer></script>
+</body>
+</html>

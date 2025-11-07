@@ -8,36 +8,69 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <!-- Local stylesheet for this specific query page -->
     <link rel="stylesheet" href="{{ url_for('inv_counting.static', filename='css/inv_counting.css') }}">
-    <style>
-        /* Styles specific to the results table */
-        #results { margin-top: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        #error { color: red; }
-        #loading { color: #0056b3; }
-    </style>
 </head>
 <body>
+    <div class="container control-box">
+        <form id="queryForm">
+            <label for="groupNumber">Group Number:</label>
+            <input type="text" id="groupNumber" name="groupNumber" placeholder="e.g., 38" list="group-list">
+            <button type="submit">Run Query</button> 
+            <!-- Changed to type="button" to prevent form submission -->
+            <button type="button" id="downloadButton" style="display: none;">Download Items (XLSX)</button>               
+        </form>
+        <datalist id="group-list"></datalist>
+    </div>
     <div class="container">
-        <div class="control-box">
-            <p><a href="/">&larr; Back to Directory</a></p>
-            <h1>Query Inventory by Group</h1>
-            <p>Enter a group number to search for.</p>
-            <form id="queryForm">
-                <label for="groupNumber">Group Number:</label>
-                <input type="text" id="groupNumber" name="groupNumber" placeholder="e.g., 38">
-                <button type="submit">Run Query</button>                
-            </form>
-            <form id="downloadForm" action="download_xlsx" method="get" style="display: inline;">
-                <input type="hidden" id="downloadGroup" name="group">
-                <button type="submit" id="downloadButton" style="display: none; margin-left: 10px;">Download Items (XLSX)</button>
-            </form>
-        </div>
-        <div id="report-name-box"class="report-name"></div>
         <div id="error"></div>
         <div id="loading"></div>
-        <div id="results"></div>
+        <div id="results">
+            <table>
+                <colgroup>
+                    <col style="width: 15%;">
+                    <col style="width: 8%;">
+                    <col style="width: 8%;">
+                    <col style="width: 8%;">
+                    <col style="width: 5%;">
+                    <col style="width: 8%;">
+                    <col style="width: 8%;">
+                    <col style="width: 8%;">
+                    <col style="width: 32%;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th id="table-header-info" colspan="9"></th>
+                    </tr>
+                    <tr>
+                        <th>Item</th>
+                        <th>Loc. 1</th>
+                        <th>Loc. 2</th>
+                        <th>Total</th>
+                        <th>UM</th>
+                        <th>QOH</th>
+                        <th>Committed</th>
+                        <th>On Order</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="template-section-header" style="display: none;">
+                        <td class="section-header" colspan="9"></td>
+                    </tr>
+                    <tr id="template-row"style="display: none;">
+                        <td data-col="Item"></td>
+                        <td data-col="loc1"></td>
+                        <td data-col="loc2"></td>
+                        <td data-col="total"></td>
+                        <td data-col="BaseUnitofMeasure"></td>
+                        <td data-col="OnHand"></td>
+                        <td data-col="Committed"></td>
+                        <td data-col="OnOrder"></td>
+                        <td data-col="Description"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
     </div>
     <!-- Link to the external JavaScript file for this page -->
     <script src="{{ url_for('inv_counting.static', filename='js/inv_counting.js') }}" defer></script>

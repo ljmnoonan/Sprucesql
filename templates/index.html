@@ -6,16 +6,6 @@
     <title>SpruceSQL Query Directory</title>
     <!-- Link to the global stylesheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <style>
-        /* Styles specific to the index page directory */
-        ul { list-style-type: none; padding-left: 20px; }
-        summary { cursor: pointer; font-weight: bold; }
-        details > summary { list-style: none; }
-        details > summary::-webkit-details-marker { display: none; }
-        details > summary::before { content: '▸ '; }
-        details[open] > summary::before { content: '▾ '; }
-        .query-link { margin: 5px 0; font-size: 1.1em; }
-    </style>
 </head>
 <body>
     {# This macro recursively renders the directory tree #}

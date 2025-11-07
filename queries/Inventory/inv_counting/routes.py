@@ -22,6 +22,26 @@ def inv_counting_page():
     """Serves the page for the Inventory Counting query."""
     return render_template('inv_counting.html')
 
+@inv_counting_bp.route('/groups')
+def get_groups():
+    """
+    API endpoint to fetch all group numbers and descriptions.
+    """
+    try:
+        sql_query = "SELECT [Group], [Description] FROM GroupSection (nolock) WHERE [Section] = 0 ORDER BY [Group];"
+        
+        conn_str = current_app.config['CONNECTION_STRING']
+        with pyodbc.connect(conn_str) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_query)
+                columns = [column[0] for column in cursor.description]
+                results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+        return jsonify(results)
+    except Exception as e:
+        current_app.logger.error(f"An unexpected error occurred while fetching groups: {e}")
+        return jsonify({"error": "An internal server error occurred while fetching groups."}), 500
+
 @inv_counting_bp.route('/query', methods=['POST'])
 def query_inv_counting():
     """
@@ -36,12 +56,20 @@ def query_inv_counting():
 
         sql_query = """
             SELECT
-                incom.ReportSequence, instr.Item, incom.Description,
-                instr.OnHand, instr.OnOrder, instr.Committed
+                instr.Item,
+                instr.OnHand,
+                instr.Committed,
+                instr.OnOrder,
+                incom.Description,
+                incom.Section,
+                gs.Description as SectionDescription,
+                incom.BaseUnitofMeasure,
+                instr.Disabled
             FROM InventoryCommon incom (nolock) 
             INNER JOIN InventoryStore instr (nolock) on incom.Item = instr.Item
+            LEFT JOIN GroupSection gs (nolock) on incom.[Group] = gs.[Group] and incom.Section = gs.Section
             WHERE incom.[Group] = ?
-            ORDER BY TRY_CAST([incom].[ReportSequence] AS INT);
+            ORDER BY incom.Section, TRY_CAST([incom].[ReportSequence] AS INT);
         """
 
         # Access the connection string from the main app's config
@@ -74,7 +102,7 @@ def download_xlsx():
         return jsonify({"error": "Group parameter is missing"}), 400
 
     try:
-        sql_query = "SELECT instr.Item FROM InventoryCommon incom (nolock) INNER JOIN InventoryStore instr (nolock) on incom.Item = instr.Item WHERE incom.[Group] = ?"
+        sql_query = "SELECT instr.Item FROM InventoryCommon incom (nolock) INNER JOIN InventoryStore instr (nolock) on incom.Item = instr.Item WHERE incom.[Group] = ? ORDER BY incom.Section, TRY_CAST([incom].[ReportSequence] AS INT)"
         
         conn_str = current_app.config['CONNECTION_STRING']
         with pyodbc.connect(conn_str) as conn:
@@ -85,7 +113,6 @@ def download_xlsx():
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = "Items"
-        ws.append(["Item"])  # Header
         for item in items:
             ws.append([item])
 

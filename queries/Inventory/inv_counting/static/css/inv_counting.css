@@ -1,33 +1,20 @@
-/* --- Styles specific to the Inventory Counting page --- */
-
-input {
-    width: 100%;
-    padding: 8px;
-    margin: 10px 0;
-    box-sizing: border-box;
+/* Style for the dynamic header row that contains the group info */
+#table-header-info {
+    text-align: left;
+    font-weight: bold;
+    background-color: #fff; /* Match page background, or choose another color */
+    border: none; /* Remove border for a cleaner look */
 }
 
-button {
-    padding: 10px 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+/* Style for rows of disabled items */
+.disabled-item {
+    text-decoration: line-through;
 }
 
-button:hover {
-    background-color: #0056b3;
-}
-
-.report-name {
-    display: none;
-} 
-
-
-
-@media print {
-    .report-name {
-        display: inline;
-    }
+/* Style for the section header rows */
+.section-header {
+    background-color: #d3d3d3; /* A light grey background */
+    font-weight: bold;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
 }

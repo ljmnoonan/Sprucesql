@@ -27,7 +27,11 @@
             <form id="queryForm">
                 <label for="groupNumber">Group Number:</label>
                 <input type="text" id="groupNumber" name="groupNumber" placeholder="e.g., 38">
-                <button type="submit">Run Query</button>
+                <button type="submit">Run Query</button>                
+            </form>
+            <form id="downloadForm" action="download_xlsx" method="get" style="display: inline;">
+                <input type="hidden" id="downloadGroup" name="group">
+                <button type="submit" id="downloadButton" style="display: none; margin-left: 10px;">Download Items (XLSX)</button>
             </form>
         </div>
         <div id="report-name-box"class="report-name"></div>
@@ -35,7 +39,6 @@
         <div id="loading"></div>
         <div id="results"></div>
     </div>
-    
     <!-- Link to the external JavaScript file for this page -->
     <script src="{{ url_for('inv_counting.static', filename='js/inv_counting.js') }}" defer></script>
 </body>
